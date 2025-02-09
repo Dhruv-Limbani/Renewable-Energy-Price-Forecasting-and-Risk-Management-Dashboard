@@ -34,3 +34,4 @@ into risk_metrics_hourly
 FROM risk_metrics AS r
 JOIN var_metrics AS v ON date_trunc('hour', r.date_time) = v.hour;
 
+SELECT * FROM risk_metrics_hourly;
