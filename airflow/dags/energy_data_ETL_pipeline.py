@@ -73,7 +73,9 @@ def transform_energy_data(**kwargs):
                                 'forecast solar day ahead','forecast wind onshore day ahead','total load forecast',
                                 'total load actual','price day ahead','price actual','price difference', 'price lag 1d', 'price lag 7d', 'price lag 30d']]
         energy_df.rename(columns={'time': 'date_time', 'price lag 1d': 'price_lag_1d', 'price lag 7d': 'price_lag_7d',
-                                    'price lag 30d': 'price_lag_30d'}, inplace=True)
+                                    'price lag 30d': 'price_lag_30d',
+                                    'generation hydro run-of-river and poundage': 'generation hydro run of river and poundage'}, inplace=True)
+        energy_df.columns = energy_df.columns.str.replace(' ','_')
         energy_df.to_csv(energy_transformed_file, index=False)
     except Exception as e:
         logging.error(f"Error transforming energy data: {e}")
