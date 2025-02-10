@@ -1,37 +1,62 @@
-drop table if exists risk_metrics_hourly;
-WITH risk_metrics AS (
-    SELECT 
-        date_time,
-        price_actual,
-
-        -- Compute 7-day rolling volatility (168 hours)
-        STDDEV(price_actual) OVER (
-            ORDER BY date_time 
-            ROWS BETWEEN 167 PRECEDING AND CURRENT ROW
-        ) AS volatility_7d
-    FROM energy
+DROP TABLE IF EXISTS risk_metrics_hourly;
+with volatility AS(
+	SELECT
+		date_time,
+		(
+			SELECT 
+				STDDEV(e1.price_actual)
+			FROM 
+				energy AS e1
+			WHERE e1.date_time BETWEEN e2.date_time - INTERVAL '23 hours' AND e2.date_time
+		) AS volatility_1d
+	FROM energy AS e2
 ),
-var_metrics AS (
-    SELECT 
-        date_trunc('hour', date_time) AS hour,
-        PERCENTILE_CONT(0.05) WITHIN GROUP (ORDER BY price_actual) AS var_95
-    FROM energy
-    GROUP BY date_trunc('hour', date_time)
+var AS (
+	select
+		date_time,
+        (
+			SELECT 
+				PERCENTILE_CONT(0.05) 
+			WITHIN GROUP 
+				(ORDER BY e1.price_actual)
+         	FROM 
+			 	energy AS e1
+         	WHERE e1.date_time BETWEEN e2.date_time - INTERVAL '23 hours' AND e2.date_time
+        ) 	AS var_95
+	FROM energy AS e2
+),
+cvar AS(
+	SELECT
+		date_time,
+		(
+			SELECT 
+				AVG(e.price_actual)
+			FROM 
+				energy AS e
+			WHERE 
+				(e.date_time BETWEEN v.date_time - INTERVAL '23 hours' AND v.date_time)
+			AND
+				(e.price_actual<=v.var_95)
+		) AS cvar_95
+	FROM var AS v
 )
-SELECT 
-    r.date_time,
-    r.price_actual,
-    r.volatility_7d,
-    v.var_95,
-    
-    -- Compute CVaR (Conditional Value at Risk 95%)
-    (SELECT AVG(sub.price_actual) 
-     FROM risk_metrics AS sub 
-     WHERE sub.date_time BETWEEN r.date_time - INTERVAL '7 days' AND r.date_time
-     AND sub.price_actual <= v.var_95
-    ) AS cvar_95
-into risk_metrics_hourly
-FROM risk_metrics AS r
-JOIN var_metrics AS v ON date_trunc('hour', r.date_time) = v.hour;
-
+SELECT
+	e.date_time,
+	e.price_actual,
+	v.volatility_1d,
+	var.var_95,
+	cvar.cvar_95
+INTO 
+	risk_metrics_hourly
+FROM
+	energy AS e
+JOIN
+	volatility AS v
+ON e.date_time = v.date_time
+JOIN
+	var
+ON e.date_time = var.date_time
+JOIN
+	cvar
+ON e.date_time = cvar.date_time;
 SELECT * FROM risk_metrics_hourly;
