@@ -4,10 +4,21 @@
 This project leverages **data engineering, machine learning, and financial risk analysis** to forecast energy prices and assess market risks. I have built an **end-to-end pipeline** integrating **Apache Airflow, PostgreSQL, PyTorch, SQL, and Power BI** to analyze energy and weather data from five Spanish cities.  
 
 ## 🚀 Key Features  
-- **ETL Pipeline:** Designed a scalable **Apache Airflow** pipeline to automate data ingestion, transformation, and storage in **PostgreSQL**.  
+- **ETL Pipeline:** Designed a scalable **Apache Airflow** pipeline to automate data ingestion, transformation, and storage in **PostgreSQL**.
+
+    ![etl-pipeline](images\etl-pipeline.png)
+
 - **Energy Price Forecasting:** Developed an **LSTM-based model in PyTorch**, achieving **0.0202 RMSE** on test data.  
-- **Risk Analysis:** Calculated **7-day VaR, CVaR, and volatility** using SQL for market risk assessment.  
+
+    ![lstm-performance](images\LSTM-performance.png)
+
 - **Real-Time Dashboard:** Integrated insights into an **interactive Power BI dashboard** for visualization and decision-making.  
+
+    ![dashboard-1](dashboard\page_1.png)
+
+- **Risk Analysis:** Calculated **7-day VaR, CVaR, and volatility** using SQL for market risk assessment.  
+
+    ![dashboard-2](dashboard\page_2.png)
 
 ## 🗂️ Data Sources  
 - **Energy generation and price data** (Spain, 5 cities)  
